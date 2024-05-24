@@ -7,5 +7,5 @@ pub struct Pte(pub usize);
 #[derive(Debug)]
 pub struct PageRc {
     __placeholder: [usize; 2],
-    ref_count: u16,
+    pub ref_count: u16,
 }

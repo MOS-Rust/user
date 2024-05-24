@@ -6,6 +6,7 @@
 mod console;
 mod env;
 mod fork;
+mod ipc;
 mod layout;
 mod page;
 mod panic;
@@ -15,6 +16,7 @@ use core::{arch::global_asm, unreachable};
 pub use console::print;
 pub use env::*;
 pub use fork::*;
+pub use ipc::*;
 pub use layout::*;
 pub use syscall::*;
 
@@ -42,6 +44,24 @@ pub fn curenv() -> &'static Env {
 pub fn exit() -> ! {
     syscall_env_destroy(curenv().id);
     unreachable!()
+}
+
+pub fn user_halt() -> ! {
+    syscall_panic()
+}
+
+pub fn pageref(v: VA) -> i32 {
+    if !unsafe { &*VPD.add(v.pdx()) }.flags().contains(PteFlags::V) {
+        return 0;
+    }
+
+    let pte = unsafe { &*VPT.add(v.0 >> PGSHIFT) };
+
+    if !pte.flags().contains(PteFlags::V) {
+        return 0;
+    }
+
+    unsafe { &*PAGES.add(pte.0 >> PGSHIFT) }.ref_count as i32
 }
 
 #[macro_export]

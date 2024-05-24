@@ -1,4 +1,4 @@
-use crate::{layout::VA, syscall_yield, ENVS};
+use crate::{layout::VA, syscall_yield, IpcInfo, ENVS};
 
 #[repr(C)]
 #[derive(Debug)]
@@ -50,36 +50,6 @@ pub struct Trapframe {
     pub cp0_cause: u32,
     pub cp0_epc: u32,
 }
-
-#[repr(C)]
-#[derive(Debug)]
-pub struct IpcInfo {
-    pub value: u32,
-    pub from: usize,
-    pub recving: IpcStatus,
-    pub dstva: VA,
-    pub perm: usize,
-}
-
-impl Default for IpcInfo {
-    fn default() -> Self {
-        Self {
-            value: 0,
-            from: 0,
-            recving: IpcStatus::NotReceiving,
-            dstva: VA(0),
-            perm: 0,
-        }
-    }
-}
-
-#[repr(u32)]
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum IpcStatus {
-    NotReceiving = 0,
-    Receiving = 1,
-}
-
 
 pub fn envx(envid: usize) -> usize {
     envid & ((1 << 10) - 1)
