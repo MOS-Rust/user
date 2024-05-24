@@ -3,7 +3,7 @@
     .type msyscall, @function;
     .ent msyscall;
 msyscall:
-	.frame sp, 0, ra
+	.frame $29, 0, $31
 
     syscall
     jr $31

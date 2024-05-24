@@ -5,6 +5,7 @@ target = "mipsel-unknown-none"
 rustflags = [
     "-C", "force-frame-pointers=yes",
     "-C", "llvm-args=--debugger-tune=gdb",
+    "-C", "link-arg=-Tlib/src/user.ld",
 ]
 
 [unstable]

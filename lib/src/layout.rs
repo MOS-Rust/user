@@ -1,4 +1,5 @@
 use crate::{env::Env, page::{PageRc, Pte}};
+use bitflags::bitflags;
 
 pub const VPT: *const Pte = UVPT as *const Pte;
 pub const VPD: *const Pte = (UVPT + (VA(UVPT).pdx() << PGSHIFT)) as *const Pte;
@@ -26,12 +27,6 @@ impl VA {
     }
 }
 
-#[repr(u32)]
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum IpcStatus {
-    NotReceiving = 0,
-    Receiving = 1,
-}
 
 
 /// Maximum number of Address Space Identifiers(ASIDs)
@@ -62,3 +57,31 @@ pub const USTACKTOP: usize = UTOP - 2 * PTMAP;
 pub const UTEXT: usize = PDMAP;
 pub const UCOW: usize = UTEXT - PTMAP;
 pub const UTEMP: usize = UCOW - PTMAP;
+
+bitflags! {
+    pub struct PteFlags: usize {
+        /// the 6 bits below are those stored in cp0.entry_lo
+        const G = 1 << 0 << PTE_HARDFLAG_SHIFT;
+        const V = 1 << 1 << PTE_HARDFLAG_SHIFT;
+        const D = 1 << 2 << PTE_HARDFLAG_SHIFT;
+
+        // Only used internally
+        const C0 = 1 << 3 << PTE_HARDFLAG_SHIFT;
+        const C1 = 1 << 4 << PTE_HARDFLAG_SHIFT;
+        const C2 = 1 << 5 << PTE_HARDFLAG_SHIFT;
+
+        const CACHEABLE = PteFlags::C0.bits() | PteFlags::C1.bits();
+        const UNCACHED = PteFlags::C0.bits() & !PteFlags::C1.bits();
+
+        /// the bits below are controlled by software
+        const COW = 0x1;
+        const SHARED = 0x2;
+    }
+}
+
+
+impl Pte {
+    pub const fn flags(self) -> PteFlags {
+        PteFlags::from_bits_truncate(self.0 & 0xFFF)
+    }
+}

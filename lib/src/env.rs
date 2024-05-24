@@ -1,4 +1,4 @@
-use crate::{layout::{IpcStatus, VA}, syscall_yield, ENVS};
+use crate::{layout::VA, syscall_yield, ENVS};
 
 #[repr(C)]
 #[derive(Debug)]
@@ -71,6 +71,13 @@ impl Default for IpcInfo {
             perm: 0,
         }
     }
+}
+
+#[repr(u32)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum IpcStatus {
+    NotReceiving = 0,
+    Receiving = 1,
 }
 
 

@@ -5,3 +5,4 @@ authors = ["Qin-shihuang <0.0@owo.li>"]
 edition = "2021"
 
 [dependencies]
+bitflags = "1"

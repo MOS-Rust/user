@@ -1,4 +1,4 @@
-use core::arch::global_asm;
+use core::{arch::global_asm, unreachable};
 
 use crate::{env::{EnvStatus, Trapframe}, VA};
 
@@ -26,7 +26,7 @@ enum Syscall {
     WriteDev       = 16,
     ReadDev        = 17,
     MempoolOp      = 18,
-    Unhandled      = 19,
+    _Unhandled      = 19,
 }
 
 impl Syscall {
@@ -95,8 +95,8 @@ pub fn syscall_env_destroy(envid: usize) -> i32 {
     _syscall_1(Syscall::EnvDestroy, envid as u32)
 }
 
-pub fn syscall_set_tlb_mod_entry(envid: usize, entry: impl Fn(&Trapframe)) -> i32 {
-    _syscall_2(Syscall::SetTlbModEntry, envid as u32, &entry as *const _ as u32)
+pub fn syscall_set_tlb_mod_entry(envid: usize, entry: fn(*const Trapframe) -> !) -> i32 {
+    _syscall_2(Syscall::SetTlbModEntry, envid as u32, entry as usize as u32)
 }
 
 pub fn syscall_mem_alloc(envid: usize, va: VA, perm: u32) -> i32 {
@@ -116,17 +116,17 @@ pub fn syscall_exofork() -> i32 {
     _syscall_0(Syscall::Exofork)
 }
 
-pub fn syscall_set_env_status(envid: usize, status: &EnvStatus) -> i32 {
+pub fn syscall_set_env_status(envid: usize, status: EnvStatus) -> i32 {
     _syscall_2(Syscall::SetEnvStatus, envid as u32, status.to_u32())
 }
 
-pub fn syscall_set_trapframe(envid: usize, tf: &Trapframe) -> i32 {
+pub fn syscall_set_trapframe(envid: usize, tf: *const Trapframe) -> i32 {
     _syscall_2(Syscall::SetTrapframe, envid as u32, tf as *const _ as u32)
 }
 
 pub fn syscall_panic() -> ! {
     _syscall_0(Syscall::Panic);
-    loop {}
+    unreachable!()
 }
 
 pub fn syscall_ipc_try_send(envid: usize, value: u32, srcva: VA, perm: u32) -> i32 {
